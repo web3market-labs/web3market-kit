@@ -1,0 +1,197 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+import { Test, console } from "forge-std/Test.sol";
+import { {{tokenSymbol}}Token } from "../src/{{tokenSymbol}}Token.sol";
+
+contract {{tokenSymbol}}TokenTest is Test {
+    {{tokenSymbol}}Token public token;
+
+    address public owner;
+    address public alice;
+    address public bob;
+    address public carol;
+
+    uint256 public constant TOTAL_SUPPLY = {{totalSupply}} * 10 ** 18;
+
+    function setUp() public {
+        owner = makeAddr("owner");
+        alice = makeAddr("alice");
+        bob = makeAddr("bob");
+        carol = makeAddr("carol");
+
+        vm.prank(owner);
+        token = new {{tokenSymbol}}Token();
+    }
+
+    // -------------------------------------------------------------------------
+    // Constructor
+    // -------------------------------------------------------------------------
+
+    function test_name() public view {
+        assertEq(token.name(), "{{tokenName}}");
+    }
+
+    function test_symbol() public view {
+        assertEq(token.symbol(), "{{tokenSymbol}}");
+    }
+
+    function test_totalSupply() public view {
+        assertEq(token.totalSupply(), TOTAL_SUPPLY);
+    }
+
+    function test_ownerBalance() public view {
+        assertEq(token.balanceOf(owner), TOTAL_SUPPLY);
+    }
+
+    function test_reflectionFee() public view {
+        assertEq(token.reflectionFeeBps(), {{toBps reflectionPercent}});
+    }
+
+    // -------------------------------------------------------------------------
+    // Transfers & Reflection
+    // -------------------------------------------------------------------------
+
+    function test_transfer() public {
+        uint256 amount = 1000 * 10 ** 18;
+
+        vm.prank(owner);
+        token.transfer(alice, amount);
+
+        // alice receives amount minus reflection fee
+        uint256 fee = (amount * {{toBps reflectionPercent}}) / 10000;
+        assertEq(token.balanceOf(alice), amount - fee);
+    }
+
+    function test_reflectionRewards() public {
+        // Give alice and bob tokens
+        vm.prank(owner);
+        token.transfer(alice, 10000 * 10 ** 18);
+
+        vm.prank(owner);
+        token.transfer(bob, 10000 * 10 ** 18);
+
+        // Include bob in reflection (not excluded)
+        // Bob's balance should increase when carol transfers
+        uint256 bobBefore = token.balanceOf(bob);
+
+        // Send large amount to carol (reflection fee distributed)
+        vm.prank(owner);
+        token.transfer(carol, 100000 * 10 ** 18);
+
+        // Bob should have gained from the reflection fee
+        uint256 bobAfter = token.balanceOf(bob);
+        assertGt(bobAfter, bobBefore);
+    }
+
+    // -------------------------------------------------------------------------
+    // Approve & TransferFrom
+    // -------------------------------------------------------------------------
+
+    function test_approveAndTransferFrom() public {
+        uint256 amount = 1000 * 10 ** 18;
+
+        vm.prank(owner);
+        token.transfer(alice, amount);
+
+        uint256 aliceBal = token.balanceOf(alice);
+
+        vm.prank(alice);
+        token.approve(bob, aliceBal);
+
+        vm.prank(bob);
+        token.transferFrom(alice, carol, aliceBal);
+
+        uint256 fee = (aliceBal * {{toBps reflectionPercent}}) / 10000;
+        assertEq(token.balanceOf(carol), aliceBal - fee);
+        assertEq(token.balanceOf(alice), 0);
+    }
+
+    // -------------------------------------------------------------------------
+    // Max Transaction
+    // -------------------------------------------------------------------------
+
+    function test_maxTx_revert() public {
+        uint256 maxTx = token.maxTxAmount();
+
+        vm.prank(owner);
+        token.transfer(alice, maxTx * 3);
+
+        vm.prank(alice);
+        vm.expectRevert("Exceeds max tx");
+        token.transfer(bob, maxTx + 1);
+    }
+
+    // -------------------------------------------------------------------------
+    // Max Wallet
+    // -------------------------------------------------------------------------
+
+    function test_maxWallet_revert() public {
+        uint256 maxWallet = token.maxWalletAmount();
+
+        vm.prank(owner);
+        token.transfer(bob, maxWallet);
+
+        // Sending more would exceed
+        vm.prank(owner);
+        vm.expectRevert("Exceeds max wallet");
+        token.transfer(bob, 1 * 10 ** 18);
+    }
+
+    // -------------------------------------------------------------------------
+    // Exclusion
+    // -------------------------------------------------------------------------
+
+    function test_excludeFromReflection() public {
+        vm.prank(owner);
+        token.excludeFromReflection(alice);
+
+        assertTrue(token.isExcludedFromReflection(alice));
+    }
+
+    function test_includeInReflection() public {
+        vm.prank(owner);
+        token.excludeFromReflection(alice);
+
+        vm.prank(owner);
+        token.includeInReflection(alice);
+
+        assertFalse(token.isExcludedFromReflection(alice));
+    }
+
+    // -------------------------------------------------------------------------
+    // Owner Functions
+    // -------------------------------------------------------------------------
+
+    function test_setReflectionFee() public {
+        vm.prank(owner);
+        token.setReflectionFee(500);
+        assertEq(token.reflectionFeeBps(), 500);
+    }
+
+    function test_setReflectionFee_revert_tooHigh() public {
+        vm.prank(owner);
+        vm.expectRevert("Fee too high");
+        token.setReflectionFee(1001);
+    }
+
+    function test_setReflectionFee_revert_notOwner() public {
+        vm.prank(alice);
+        vm.expectRevert();
+        token.setReflectionFee(100);
+    }
+
+    function test_setMaxTx() public {
+        uint256 newMax = TOTAL_SUPPLY / 50;
+        vm.prank(owner);
+        token.setMaxTx(newMax);
+        assertEq(token.maxTxAmount(), newMax);
+    }
+
+    function test_setMaxWallet() public {
+        uint256 newMax = TOTAL_SUPPLY / 20;
+        vm.prank(owner);
+        token.setMaxWallet(newMax);
+        assertEq(token.maxWalletAmount(), newMax);
+    }
+}

@@ -1,0 +1,41 @@
+{
+  "id": "token-meme",
+  "slug": "erc20-meme",
+  "displayName": "Meme Token",
+  "description": "Fixed supply with anti-whale limits, auto-burn on every transfer, and owner-controlled trading toggle.",
+  "version": "1.0.0",
+  "tier": "free",
+  "category": "token",
+  "parameters": [
+    { "name": "tokenName", "prompt": "Token name", "type": "string", "default": "Meme Token", "required": true },
+    { "name": "tokenSymbol", "prompt": "Token symbol", "type": "string", "default": "MEME", "required": true },
+    { "name": "totalSupply", "prompt": "Total supply (in tokens)", "type": "string", "default": "1000000000", "required": true },
+    { "name": "maxTxPercent", "prompt": "Max transaction (% of supply)", "type": "string", "default": "1", "required": true },
+    { "name": "maxWalletPercent", "prompt": "Max wallet (% of supply)", "type": "string", "default": "2", "required": true },
+    { "name": "burnPercent", "prompt": "Auto-burn per transfer (%)", "type": "string", "default": "1", "required": true }
+  ],
+  "files": {
+    "contracts": [
+      { "template": "token/contracts/MemeToken.sol.hbs", "output": "contracts/src/{{tokenSymbol}}Token.sol" },
+      { "template": "token/contracts/MemeToken.t.sol.hbs", "output": "contracts/test/{{tokenSymbol}}Token.t.sol" },
+      { "template": "token/contracts/DeployMemeToken.s.sol.hbs", "output": "contracts/script/Deploy{{tokenSymbol}}Token.s.sol" }
+    ],
+    "frontend": [
+      { "template": "token/frontend/hooks/useToken.ts.hbs", "output": "web/hooks/useToken.ts" },
+      { "template": "token/frontend/components/TokenDashboard.tsx.hbs", "output": "web/components/TokenDashboard.tsx" },
+      { "template": "token/frontend/components/MintForm.tsx.hbs", "output": "web/components/MintForm.tsx" },
+      { "template": "token/frontend/components/TransferForm.tsx.hbs", "output": "web/components/TransferForm.tsx" },
+      { "template": "token/frontend/components/TokenStats.tsx.hbs", "output": "web/components/TokenStats.tsx" },
+      { "template": "token/frontend/app/page.tsx.hbs", "output": "web/app/page.tsx" }
+    ],
+    "shared": [
+      "_shared/root",
+      "_shared/contracts",
+      "_shared/frontend"
+    ]
+  },
+  "solidityDependencies": [
+    "OpenZeppelin/openzeppelin-contracts",
+    "foundry-rs/forge-std"
+  ]
+}

@@ -1,0 +1,210 @@
+'use client'
+
+import { useState{{#if burnable}}, useEffect{{/if}} } from 'react'
+import { useAccount } from 'wagmi'
+import { useToken } from '@/hooks/useToken'
+import { TokenStats } from '@/components/TokenStats'
+import { TransferForm } from '@/components/TransferForm'
+{{#if mintable}}
+import { MintForm } from '@/components/MintForm'
+{{/if}}
+
+interface TokenDashboardProps {
+  contractAddress: `0x${string}`
+}
+
+type Tab = 'transfer'{{#if mintable}} | 'mint'{{/if}}{{#if burnable}} | 'burn'{{/if}}
+
+export function TokenDashboard({ contractAddress }: TokenDashboardProps) {
+  const [activeTab, setActiveTab] = useState<Tab>('transfer')
+  const { isConnected } = useAccount()
+  const { name, symbol, isOwner{{#if burnable}}, burn, isBurnPending, isBurnConfirming, isBurnConfirmed, burnHash, resetBurn, formattedBalance{{/if}} } = useToken(contractAddress)
+
+  const tabs: { id: Tab; label: string }[] = [
+    { id: 'transfer', label: 'Transfer' },
+{{#if mintable}}
+    { id: 'mint', label: 'Mint' },
+{{/if}}
+{{#if burnable}}
+    { id: 'burn', label: 'Burn' },
+{{/if}}
+  ]
+
+  if (!isConnected) {
+    return (
+      <div className="rounded-lg border border-border bg-card p-8 text-center text-card-foreground">
+        <h2 className="text-xl font-semibold">Connect Your Wallet</h2>
+        <p className="mt-2 text-muted-foreground">
+          Connect your wallet to interact with the {name ?? '{{tokenName}}'} token.
+        </p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-3">
+        <h2 className="text-2xl font-bold">{name ?? '{{tokenName}}'}</h2>
+        {symbol && (
+          <span className="rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground">
+            {symbol}
+          </span>
+        )}
+        {isOwner && (
+          <span className="rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
+            Owner
+          </span>
+        )}
+      </div>
+
+      <TokenStats contractAddress={contractAddress} />
+
+      <div className="space-y-4">
+        <div className="flex gap-1 rounded-lg bg-muted p-1">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                activeTab === tab.id
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {activeTab === 'transfer' && (
+          <TransferForm contractAddress={contractAddress} />
+        )}
+
+{{#if mintable}}
+        {activeTab === 'mint' && (
+          <MintForm contractAddress={contractAddress} />
+        )}
+{{/if}}
+
+{{#if burnable}}
+        {activeTab === 'burn' && (
+          <BurnPanel
+            symbol={symbol}
+            formattedBalance={formattedBalance}
+            burn={burn}
+            isBurnPending={isBurnPending}
+            isBurnConfirming={isBurnConfirming}
+            isBurnConfirmed={isBurnConfirmed}
+            burnHash={burnHash}
+            resetBurn={resetBurn}
+          />
+        )}
+{{/if}}
+      </div>
+    </div>
+  )
+}
+
+{{#if burnable}}
+// --- Burn Panel (inline component) ---
+
+interface BurnPanelProps {
+  symbol: string | undefined
+  formattedBalance: string
+  burn: (amount: string) => void
+  isBurnPending: boolean
+  isBurnConfirming: boolean
+  isBurnConfirmed: boolean
+  burnHash: `0x${string}` | undefined
+  resetBurn: () => void
+}
+
+function BurnPanel({
+  symbol,
+  formattedBalance,
+  burn,
+  isBurnPending,
+  isBurnConfirming,
+  isBurnConfirmed,
+  burnHash,
+  resetBurn,
+}: BurnPanelProps) {
+  const [amount, setAmount] = useState('')
+
+  const isValidAmount = amount !== '' && Number(amount) > 0
+  const exceedsBalance = Number(amount) > Number(formattedBalance)
+  const canSubmit = isValidAmount && !exceedsBalance && !isBurnPending && !isBurnConfirming
+
+  useEffect(() => {
+    if (isBurnConfirmed) {
+      setAmount('')
+      const timer = setTimeout(() => resetBurn(), 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [isBurnConfirmed, resetBurn])
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!canSubmit) return
+    burn(amount)
+  }
+
+  return (
+    <div className="rounded-lg border border-border bg-card p-6 text-card-foreground">
+      <h3 className="text-lg font-semibold">Burn Tokens</h3>
+      <p className="text-sm text-muted-foreground mt-1">
+        Permanently destroy {symbol ?? '...'} tokens from your balance
+      </p>
+
+      <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <label htmlFor="burn-amount" className="text-sm font-medium">
+              Amount to Burn
+            </label>
+            <button
+              type="button"
+              onClick={() => setAmount(formattedBalance)}
+              className="text-xs text-muted-foreground hover:text-foreground"
+            >
+              Balance: {formattedBalance} {symbol ?? ''}
+            </button>
+          </div>
+          <input
+            id="burn-amount"
+            type="number"
+            step="any"
+            min="0"
+            placeholder="0.00"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
+          {exceedsBalance && (
+            <p className="text-sm text-destructive">Amount exceeds your balance</p>
+          )}
+        </div>
+
+        <button
+          type="submit"
+          disabled={!canSubmit}
+          className="inline-flex w-full items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:pointer-events-none disabled:opacity-50"
+        >
+          {isBurnPending
+            ? 'Confirm in Wallet...'
+            : isBurnConfirming
+              ? 'Confirming...'
+              : 'Burn Tokens'}
+        </button>
+      </form>
+
+      {isBurnConfirmed && burnHash && (
+        <div className="mt-4 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200">
+          Burn confirmed!{' '}
+          <span className="font-mono text-xs break-all">{burnHash}</span>
+        </div>
+      )}
+    </div>
+  )
+}
+{{/if}}

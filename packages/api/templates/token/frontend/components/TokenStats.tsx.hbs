@@ -1,0 +1,46 @@
+'use client'
+
+import { useToken } from '@/hooks/useToken'
+import { shortenAddress } from '@/lib/utils'
+
+interface TokenStatsProps {
+  contractAddress: `0x${string}`
+}
+
+export function TokenStats({ contractAddress }: TokenStatsProps) {
+  const { name, symbol, formattedTotalSupply, formattedBalance, owner } =
+    useToken(contractAddress)
+
+  const stats = [
+    { label: 'Token Name', value: name ?? '...' },
+    { label: 'Symbol', value: symbol ?? '...' },
+    { label: 'Total Supply', value: formattedTotalSupply },
+    { label: 'Your Balance', value: formattedBalance },
+  ]
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {stats.map((stat) => (
+          <div
+            key={stat.label}
+            className="rounded-lg border border-border bg-card p-4 text-card-foreground"
+          >
+            <p className="text-sm text-muted-foreground">{stat.label}</p>
+            <p className="mt-1 text-2xl font-bold truncate" title={stat.value}>
+              {stat.value}
+            </p>
+          </div>
+        ))}
+      </div>
+      {owner && (
+        <div className="rounded-lg border border-border bg-card p-4 text-card-foreground">
+          <p className="text-sm text-muted-foreground">Contract Owner</p>
+          <p className="mt-1 font-mono text-sm" title={owner}>
+            {shortenAddress(owner, 8)}
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}

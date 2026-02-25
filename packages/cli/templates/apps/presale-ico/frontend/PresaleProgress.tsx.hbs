@@ -1,0 +1,40 @@
+'use client'
+
+interface PresaleProgressProps {
+  hardCap: number
+  softCap: number
+}
+
+export function PresaleProgress({ hardCap, softCap }: PresaleProgressProps) {
+  // TODO: Replace with actual contract reads after codegen
+  const totalRaised = 0
+  const percentage = hardCap > 0 ? Math.min((totalRaised / hardCap) * 100, 100) : 0
+  const softCapPercent = hardCap > 0 ? (softCap / hardCap) * 100 : 0
+
+  return (
+    <div className="rounded-lg border bg-card p-6">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-lg font-semibold">Presale Progress</h3>
+        <span className="text-sm text-muted-foreground">
+          {totalRaised} / {hardCap} ETH
+        </span>
+      </div>
+      <div className="relative h-4 w-full rounded-full bg-secondary overflow-hidden">
+        <div
+          className="h-full rounded-full bg-primary transition-all duration-500"
+          style=\{{ width: `${percentage}%` }}
+        />
+        <div
+          className="absolute top-0 h-full w-0.5 bg-yellow-500"
+          style=\{{ left: `${softCapPercent}%` }}
+          title={`Soft cap: ${softCap} ETH`}
+        />
+      </div>
+      <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+        <span>0 ETH</span>
+        <span className="text-yellow-600">Soft cap: {softCap} ETH</span>
+        <span>Hard cap: {hardCap} ETH</span>
+      </div>
+    </div>
+  )
+}

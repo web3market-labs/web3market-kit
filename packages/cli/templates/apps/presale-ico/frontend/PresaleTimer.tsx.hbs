@@ -1,0 +1,53 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+
+interface PresaleTimerProps {
+  durationDays: number
+}
+
+export function PresaleTimer({ durationDays }: PresaleTimerProps) {
+  // TODO: Replace with actual presale start/end from contract
+  const [timeLeft, setTimeLeft] = useState({
+    days: durationDays,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  })
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 }
+        if (prev.minutes > 0) return { ...prev, minutes: prev.minutes - 1, seconds: 59 }
+        if (prev.hours > 0) return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 }
+        if (prev.days > 0) return { ...prev, days: prev.days - 1, hours: 23, minutes: 59, seconds: 59 }
+        return prev
+      })
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  const units = [
+    { label: 'Days', value: timeLeft.days },
+    { label: 'Hours', value: timeLeft.hours },
+    { label: 'Minutes', value: timeLeft.minutes },
+    { label: 'Seconds', value: timeLeft.seconds },
+  ]
+
+  return (
+    <div className="rounded-lg border bg-card p-6 text-center">
+      <h3 className="text-lg font-semibold mb-4">Presale Ends In</h3>
+      <div className="flex justify-center gap-4">
+        {units.map((unit) => (
+          <div key={unit.label} className="flex flex-col items-center">
+            <span className="text-3xl font-bold tabular-nums">
+              {String(unit.value).padStart(2, '0')}
+            </span>
+            <span className="text-xs text-muted-foreground mt-1">{unit.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}

@@ -1,0 +1,41 @@
+{
+  "id": "token-tax",
+  "slug": "erc20-tax",
+  "displayName": "Tax Token",
+  "description": "Buy/sell tax with treasury wallet and anti-whale limits. Configurable tax rates, LP pair detection, and exclusion lists.",
+  "version": "1.0.0",
+  "tier": "free",
+  "category": "token",
+  "parameters": [
+    { "name": "tokenName", "prompt": "Token name", "type": "string", "default": "Tax Token", "required": true },
+    { "name": "tokenSymbol", "prompt": "Token symbol", "type": "string", "default": "TAX", "required": true },
+    { "name": "initialSupply", "prompt": "Initial supply (in tokens)", "type": "string", "default": "1000000", "required": true },
+    { "name": "buyTaxPercent", "prompt": "Buy tax (%)", "type": "string", "default": "5", "required": true },
+    { "name": "sellTaxPercent", "prompt": "Sell tax (%)", "type": "string", "default": "5", "required": true },
+    { "name": "maxWalletPercent", "prompt": "Max wallet (% of supply)", "type": "string", "default": "2", "required": true }
+  ],
+  "files": {
+    "contracts": [
+      { "template": "token/contracts/TaxToken.sol.hbs", "output": "contracts/src/{{tokenSymbol}}Token.sol" },
+      { "template": "token/contracts/TaxToken.t.sol.hbs", "output": "contracts/test/{{tokenSymbol}}Token.t.sol" },
+      { "template": "token/contracts/DeployTaxToken.s.sol.hbs", "output": "contracts/script/Deploy{{tokenSymbol}}Token.s.sol" }
+    ],
+    "frontend": [
+      { "template": "token/frontend/hooks/useToken.ts.hbs", "output": "web/hooks/useToken.ts" },
+      { "template": "token/frontend/components/TokenDashboard.tsx.hbs", "output": "web/components/TokenDashboard.tsx" },
+      { "template": "token/frontend/components/MintForm.tsx.hbs", "output": "web/components/MintForm.tsx" },
+      { "template": "token/frontend/components/TransferForm.tsx.hbs", "output": "web/components/TransferForm.tsx" },
+      { "template": "token/frontend/components/TokenStats.tsx.hbs", "output": "web/components/TokenStats.tsx" },
+      { "template": "token/frontend/app/page.tsx.hbs", "output": "web/app/page.tsx" }
+    ],
+    "shared": [
+      "_shared/root",
+      "_shared/contracts",
+      "_shared/frontend"
+    ]
+  },
+  "solidityDependencies": [
+    "OpenZeppelin/openzeppelin-contracts",
+    "foundry-rs/forge-std"
+  ]
+}

@@ -1,0 +1,260 @@
+'use client'
+
+import { useReadContract, useWriteContract, useAccount, useWaitForTransactionReceipt } from 'wagmi'
+import { parseUnits, formatUnits } from 'viem'
+
+const TOKEN_ABI = [
+  {
+    name: 'name',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [{ name: '', type: 'string' }],
+  },
+  {
+    name: 'symbol',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [{ name: '', type: 'string' }],
+  },
+  {
+    name: 'decimals',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [{ name: '', type: 'uint8' }],
+  },
+  {
+    name: 'totalSupply',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [{ name: '', type: 'uint256' }],
+  },
+  {
+    name: 'balanceOf',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [{ name: 'account', type: 'address' }],
+    outputs: [{ name: '', type: 'uint256' }],
+  },
+  {
+    name: 'transfer',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'to', type: 'address' },
+      { name: 'value', type: 'uint256' },
+    ],
+    outputs: [{ name: '', type: 'bool' }],
+  },
+  {
+    name: 'owner',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [],
+    outputs: [{ name: '', type: 'address' }],
+  },
+{{#if mintable}}
+  {
+    name: 'mint',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'to', type: 'address' },
+      { name: 'amount', type: 'uint256' },
+    ],
+    outputs: [],
+  },
+{{/if}}
+{{#if burnable}}
+  {
+    name: 'burn',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [{ name: 'value', type: 'uint256' }],
+    outputs: [],
+  },
+{{/if}}
+{{#if pausable}}
+  {
+    name: 'pause',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [],
+    outputs: [],
+  },
+  {
+    name: 'unpause',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [],
+    outputs: [],
+  },
+{{/if}}
+] as const
+
+export function useToken(contractAddress: `0x${string}`) {
+  const { address } = useAccount()
+
+  // --- Read state ---
+
+  const { data: name } = useReadContract({
+    address: contractAddress,
+    abi: TOKEN_ABI,
+    functionName: 'name',
+  })
+
+  const { data: symbol } = useReadContract({
+    address: contractAddress,
+    abi: TOKEN_ABI,
+    functionName: 'symbol',
+  })
+
+  const { data: decimals } = useReadContract({
+    address: contractAddress,
+    abi: TOKEN_ABI,
+    functionName: 'decimals',
+  })
+
+  const { data: totalSupply } = useReadContract({
+    address: contractAddress,
+    abi: TOKEN_ABI,
+    functionName: 'totalSupply',
+  })
+
+  const { data: balance } = useReadContract({
+    address: contractAddress,
+    abi: TOKEN_ABI,
+    functionName: 'balanceOf',
+    args: address ? [address] : undefined,
+    query: { enabled: !!address },
+  })
+
+  const { data: owner } = useReadContract({
+    address: contractAddress,
+    abi: TOKEN_ABI,
+    functionName: 'owner',
+  })
+
+  // --- Write functions ---
+
+  const {
+    writeContract: writeTransfer,
+    data: transferHash,
+    isPending: isTransferPending,
+    reset: resetTransfer,
+  } = useWriteContract()
+
+  const { isLoading: isTransferConfirming, isSuccess: isTransferConfirmed } =
+    useWaitForTransactionReceipt({ hash: transferHash })
+
+{{#if mintable}}
+  const {
+    writeContract: writeMint,
+    data: mintHash,
+    isPending: isMintPending,
+    reset: resetMint,
+  } = useWriteContract()
+
+  const { isLoading: isMintConfirming, isSuccess: isMintConfirmed } =
+    useWaitForTransactionReceipt({ hash: mintHash })
+
+{{/if}}
+{{#if burnable}}
+  const {
+    writeContract: writeBurn,
+    data: burnHash,
+    isPending: isBurnPending,
+    reset: resetBurn,
+  } = useWriteContract()
+
+  const { isLoading: isBurnConfirming, isSuccess: isBurnConfirmed } =
+    useWaitForTransactionReceipt({ hash: burnHash })
+
+{{/if}}
+  // --- Computed values ---
+
+  const tokenDecimals = decimals ?? 18
+  const isOwner = !!(address && owner && address.toLowerCase() === owner.toLowerCase())
+  const formattedBalance = balance != null ? formatUnits(balance, tokenDecimals) : '0'
+  const formattedTotalSupply = totalSupply != null ? formatUnits(totalSupply, tokenDecimals) : '0'
+
+  // --- Action functions ---
+
+  function transfer(to: `0x${string}`, amount: string) {
+    writeTransfer({
+      address: contractAddress,
+      abi: TOKEN_ABI,
+      functionName: 'transfer',
+      args: [to, parseUnits(amount, tokenDecimals)],
+    })
+  }
+
+{{#if mintable}}
+  function mint(to: `0x${string}`, amount: string) {
+    writeMint({
+      address: contractAddress,
+      abi: TOKEN_ABI,
+      functionName: 'mint',
+      args: [to, parseUnits(amount, tokenDecimals)],
+    })
+  }
+
+{{/if}}
+{{#if burnable}}
+  function burn(amount: string) {
+    writeBurn({
+      address: contractAddress,
+      abi: TOKEN_ABI,
+      functionName: 'burn',
+      args: [parseUnits(amount, tokenDecimals)],
+    })
+  }
+
+{{/if}}
+  return {
+    // Read state
+    name,
+    symbol,
+    decimals: tokenDecimals,
+    totalSupply,
+    balance,
+    owner,
+
+    // Computed
+    isOwner,
+    formattedBalance,
+    formattedTotalSupply,
+
+    // Transfer
+    transfer,
+    transferHash,
+    isTransferPending,
+    isTransferConfirming,
+    isTransferConfirmed,
+    resetTransfer,
+
+{{#if mintable}}
+    // Mint
+    mint,
+    mintHash,
+    isMintPending,
+    isMintConfirming,
+    isMintConfirmed,
+    resetMint,
+
+{{/if}}
+{{#if burnable}}
+    // Burn
+    burn,
+    burnHash,
+    isBurnPending,
+    isBurnConfirming,
+    isBurnConfirmed,
+    resetBurn,
+
+{{/if}}
+  }
+}

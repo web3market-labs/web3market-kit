@@ -1,0 +1,221 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { IERC20Metadata } from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+
+/**
+ * @title {{tokenSymbol}}Token
+ * @notice Reflection token — holders earn passive rewards from every transfer.
+ *         Uses the reflected-supply pattern: rOwned tracks a "reflected" balance
+ *         that grows as fees are removed from the reflected total.
+ */
+contract {{tokenSymbol}}Token is IERC20, IERC20Metadata, Ownable {
+    string private _name;
+    string private _symbol;
+
+    uint256 private constant MAX = type(uint256).max;
+    uint256 private _tTotal;
+    uint256 private _rTotal;
+
+    mapping(address => uint256) private _rOwned;
+    mapping(address => uint256) private _tOwned;
+    mapping(address => mapping(address => uint256)) private _allowances;
+
+    mapping(address => bool) private _isExcludedFromReflection;
+    address[] private _excluded;
+
+    uint256 public reflectionFeeBps;
+    uint256 public maxTxAmount;
+    uint256 public maxWalletAmount;
+
+    event ReflectionFeeUpdated(uint256 feeBps);
+    event MaxTxUpdated(uint256 amount);
+    event MaxWalletUpdated(uint256 amount);
+
+    constructor()
+        Ownable(msg.sender)
+    {
+        _name = "{{tokenName}}";
+        _symbol = "{{tokenSymbol}}";
+
+        _tTotal = {{totalSupply}} * 10 ** 18;
+        _rTotal = (MAX - (MAX % _tTotal));
+
+        reflectionFeeBps = {{toBps reflectionPercent}};
+        maxTxAmount = (_tTotal * {{maxTxPercent}}) / 100;
+        maxWalletAmount = (_tTotal * {{maxWalletPercent}}) / 100;
+
+        _rOwned[msg.sender] = _rTotal;
+
+        // Exclude owner and contract from reflection
+        _excludeFromReflection(msg.sender);
+        _excludeFromReflection(address(this));
+
+        emit Transfer(address(0), msg.sender, _tTotal);
+    }
+
+    // --- ERC20 Metadata ---
+
+    function name() public view override returns (string memory) { return _name; }
+    function symbol() public view override returns (string memory) { return _symbol; }
+    function decimals() public pure override returns (uint8) { return 18; }
+    function totalSupply() public view override returns (uint256) { return _tTotal; }
+
+    function balanceOf(address account) public view override returns (uint256) {
+        if (_isExcludedFromReflection[account]) return _tOwned[account];
+        return _tokenFromReflection(_rOwned[account]);
+    }
+
+    function transfer(address to, uint256 amount) public override returns (bool) {
+        _transfer(msg.sender, to, amount);
+        return true;
+    }
+
+    function allowance(address owner_, address spender) public view override returns (uint256) {
+        return _allowances[owner_][spender];
+    }
+
+    function approve(address spender, uint256 amount) public override returns (bool) {
+        _approve(msg.sender, spender, amount);
+        return true;
+    }
+
+    function transferFrom(address from, address to, uint256 amount) public override returns (bool) {
+        uint256 currentAllowance = _allowances[from][msg.sender];
+        require(currentAllowance >= amount, "ERC20: transfer amount exceeds allowance");
+        unchecked {
+            _approve(from, msg.sender, currentAllowance - amount);
+        }
+        _transfer(from, to, amount);
+        return true;
+    }
+
+    // --- Reflection helpers ---
+
+    function _tokenFromReflection(uint256 rAmount) private view returns (uint256) {
+        require(rAmount <= _rTotal, "Amount exceeds reflected total");
+        uint256 currentRate = _getRate();
+        return rAmount / currentRate;
+    }
+
+    function _getRate() private view returns (uint256) {
+        (uint256 rSupply, uint256 tSupply) = _getCurrentSupply();
+        return rSupply / tSupply;
+    }
+
+    function _getCurrentSupply() private view returns (uint256, uint256) {
+        uint256 rSupply = _rTotal;
+        uint256 tSupply = _tTotal;
+        for (uint256 i = 0; i < _excluded.length; i++) {
+            if (_rOwned[_excluded[i]] > rSupply || _tOwned[_excluded[i]] > tSupply) {
+                return (_rTotal, _tTotal);
+            }
+            rSupply -= _rOwned[_excluded[i]];
+            tSupply -= _tOwned[_excluded[i]];
+        }
+        if (rSupply < _rTotal / _tTotal) return (_rTotal, _tTotal);
+        return (rSupply, tSupply);
+    }
+
+    // --- Transfer logic ---
+
+    function _transfer(address from, address to, uint256 amount) private {
+        require(from != address(0), "ERC20: transfer from zero");
+        require(to != address(0), "ERC20: transfer to zero");
+        require(amount > 0, "Amount must be > 0");
+
+        // Limits (skip for excluded/owner)
+        if (from != owner() && to != owner()) {
+            require(amount <= maxTxAmount, "Exceeds max tx");
+        }
+
+        uint256 fee = (amount * reflectionFeeBps) / 10000;
+        uint256 transferAmount = amount - fee;
+
+        uint256 currentRate = _getRate();
+        uint256 rAmount = amount * currentRate;
+        uint256 rFee = fee * currentRate;
+        uint256 rTransfer = rAmount - rFee;
+
+        // Deduct from sender
+        _rOwned[from] -= rAmount;
+        if (_isExcludedFromReflection[from]) {
+            _tOwned[from] -= amount;
+        }
+
+        // Credit to receiver
+        _rOwned[to] += rTransfer;
+        if (_isExcludedFromReflection[to]) {
+            _tOwned[to] += transferAmount;
+        }
+
+        // Distribute reflection fee
+        _rTotal -= rFee;
+
+        // Max wallet check
+        if (to != owner() && !_isExcludedFromReflection[to]) {
+            require(balanceOf(to) <= maxWalletAmount, "Exceeds max wallet");
+        }
+
+        emit Transfer(from, to, transferAmount);
+    }
+
+    function _approve(address owner_, address spender, uint256 amount) private {
+        require(owner_ != address(0), "ERC20: approve from zero");
+        require(spender != address(0), "ERC20: approve to zero");
+        _allowances[owner_][spender] = amount;
+        emit Approval(owner_, spender, amount);
+    }
+
+    // --- Owner functions ---
+
+    function _excludeFromReflection(address account) private {
+        if (_isExcludedFromReflection[account]) return;
+        if (_rOwned[account] > 0) {
+            _tOwned[account] = _tokenFromReflection(_rOwned[account]);
+        }
+        _isExcludedFromReflection[account] = true;
+        _excluded.push(account);
+    }
+
+    function excludeFromReflection(address account) external onlyOwner {
+        _excludeFromReflection(account);
+    }
+
+    function includeInReflection(address account) external onlyOwner {
+        require(_isExcludedFromReflection[account], "Not excluded");
+        for (uint256 i = 0; i < _excluded.length; i++) {
+            if (_excluded[i] == account) {
+                _excluded[i] = _excluded[_excluded.length - 1];
+                _excluded.pop();
+                break;
+            }
+        }
+        _tOwned[account] = 0;
+        _isExcludedFromReflection[account] = false;
+    }
+
+    function setReflectionFee(uint256 _feeBps) external onlyOwner {
+        require(_feeBps <= 1000, "Fee too high");
+        reflectionFeeBps = _feeBps;
+        emit ReflectionFeeUpdated(_feeBps);
+    }
+
+    function setMaxTx(uint256 _maxTxAmount) external onlyOwner {
+        require(_maxTxAmount >= _tTotal / 1000, "Max tx too low");
+        maxTxAmount = _maxTxAmount;
+        emit MaxTxUpdated(_maxTxAmount);
+    }
+
+    function setMaxWallet(uint256 _maxWalletAmount) external onlyOwner {
+        require(_maxWalletAmount >= _tTotal / 1000, "Max wallet too low");
+        maxWalletAmount = _maxWalletAmount;
+        emit MaxWalletUpdated(_maxWalletAmount);
+    }
+
+    function isExcludedFromReflection(address account) external view returns (bool) {
+        return _isExcludedFromReflection[account];
+    }
+}

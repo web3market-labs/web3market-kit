@@ -1,0 +1,26 @@
+{
+  "name": "@web3market/codegen",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@web3market/config": "workspace:*",
+    "@web3market/sdk": "workspace:*",
+    "abitype": "^1.0.0"
+  },
+  "devDependencies": {
+    "@web3market/tsconfig": "workspace:*",
+    "tsup": "^8.3.0",
+    "typescript": "^5.7.0",
+    "viem": "^2.21.0"
+  }
+}

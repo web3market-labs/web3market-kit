@@ -1,0 +1,55 @@
+'use client'
+
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
+
+export function VestingPanel() {
+  const { address } = useAccount()
+
+  const { writeContract, data: hash, isPending } = useWriteContract()
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
+
+  const handleClaim = () => {
+    if (!address) return
+    // TODO: Replace with your deployed presale contract address and generated ABI
+    // writeContract({
+    //   address: PRESALE_ADDRESS,
+    //   abi: presaleAbi,
+    //   functionName: 'claimTokens',
+    // })
+  }
+
+  return (
+    <div className="rounded-lg border bg-card p-6">
+      <h3 className="text-lg font-semibold mb-4">Token Vesting</h3>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">Vesting Cliff</span>
+          <span className="font-medium">{{vestingCliffDays}} days</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">Your Contribution</span>
+          <span className="font-medium">— ETH</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">Tokens Allocated</span>
+          <span className="font-medium">— {{presaleTokenSymbol}}</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">Claimable Now</span>
+          <span className="font-medium text-green-600">— {{presaleTokenSymbol}}</span>
+        </div>
+        <div className="h-px bg-border" />
+        <button
+          onClick={handleClaim}
+          disabled={isPending || isConfirming}
+          className="inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 w-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+        >
+          {isPending ? 'Confirming...' : isConfirming ? 'Claiming...' : 'Claim Tokens'}
+        </button>
+        {isSuccess && (
+          <p className="text-sm text-green-600">Tokens claimed successfully!</p>
+        )}
+      </div>
+    </div>
+  )
+}

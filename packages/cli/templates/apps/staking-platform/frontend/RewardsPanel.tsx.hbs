@@ -1,0 +1,51 @@
+'use client'
+
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
+
+export function RewardsPanel() {
+  const { address } = useAccount()
+
+  const { writeContract, data: hash, isPending } = useWriteContract()
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
+
+  const handleClaim = () => {
+    if (!address) return
+    // TODO: Replace with your deployed contract address and generated ABI
+    // writeContract({
+    //   address: STAKING_ADDRESS,
+    //   abi: stakingAbi,
+    //   functionName: 'claimRewards',
+    // })
+  }
+
+  return (
+    <div className="rounded-lg border bg-card p-6">
+      <h3 className="text-lg font-semibold mb-4">Your Rewards</h3>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">Pending Rewards</span>
+          <span className="text-xl font-bold">— {{stakingTokenSymbol}}</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">APY</span>
+          <span className="text-xl font-bold text-green-600">{{rewardRate}}%</span>
+        </div>
+        <div className="h-px bg-border" />
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">Total Earned (All Time)</span>
+          <span className="font-medium">— {{stakingTokenSymbol}}</span>
+        </div>
+        <button
+          onClick={handleClaim}
+          disabled={isPending || isConfirming}
+          className="inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 w-full bg-green-600 text-white hover:bg-green-700 disabled:opacity-50"
+        >
+          {isPending ? 'Confirming...' : isConfirming ? 'Claiming...' : 'Claim Rewards'}
+        </button>
+        {isSuccess && (
+          <p className="text-sm text-green-600">Rewards claimed successfully!</p>
+        )}
+      </div>
+    </div>
+  )
+}

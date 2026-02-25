@@ -1,0 +1,43 @@
+'use client'
+
+import { useAccount, useReadContract } from 'wagmi'
+import { formatEther } from 'viem'
+
+export function TokenStats() {
+  const { address } = useAccount()
+
+  // TODO: Replace with your deployed contract address and generated ABI
+  // const { data: totalSupply } = useReadContract({
+  //   address: CONTRACT_ADDRESS,
+  //   abi: tokenAbi,
+  //   functionName: 'totalSupply',
+  // })
+  // const { data: balance } = useReadContract({
+  //   address: CONTRACT_ADDRESS,
+  //   abi: tokenAbi,
+  //   functionName: 'balanceOf',
+  //   args: [address!],
+  //   query: { enabled: !!address },
+  // })
+
+  const stats = [
+    { label: 'Token Name', value: '{{tokenName}}' },
+    { label: 'Symbol', value: '{{tokenSymbol}}' },
+    { label: 'Initial Supply', value: '{{initialSupply}}' },
+    { label: 'Your Balance', value: '—' },
+  ]
+
+  return (
+    <div className="rounded-lg border bg-card p-6">
+      <h3 className="text-lg font-semibold mb-4">Token Overview</h3>
+      <div className="grid gap-4 md:grid-cols-4">
+        {stats.map((stat) => (
+          <div key={stat.label} className="space-y-1">
+            <p className="text-sm text-muted-foreground">{stat.label}</p>
+            <p className="text-2xl font-bold">{stat.value}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}

@@ -1,0 +1,177 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+import { Test, console } from "forge-std/Test.sol";
+import { {{tokenSymbol}}Token } from "../src/{{tokenSymbol}}Token.sol";
+
+contract {{tokenSymbol}}TokenTest is Test {
+    {{tokenSymbol}}Token public token;
+
+    address public owner;
+    address public alice;
+    address public bob;
+    address public lpPair;
+    address public treasury;
+
+    uint256 public constant INITIAL_SUPPLY = {{initialSupply}} * 10 ** 18;
+
+    function setUp() public {
+        owner = makeAddr("owner");
+        alice = makeAddr("alice");
+        bob = makeAddr("bob");
+        lpPair = makeAddr("lpPair");
+        treasury = makeAddr("treasury");
+
+        vm.prank(owner);
+        token = new {{tokenSymbol}}Token();
+
+        vm.startPrank(owner);
+        token.setLpPair(lpPair);
+        token.setTaxWallet(treasury);
+        vm.stopPrank();
+    }
+
+    // -------------------------------------------------------------------------
+    // Constructor
+    // -------------------------------------------------------------------------
+
+    function test_name() public view {
+        assertEq(token.name(), "{{tokenName}}");
+    }
+
+    function test_symbol() public view {
+        assertEq(token.symbol(), "{{tokenSymbol}}");
+    }
+
+    function test_initialSupply() public view {
+        assertEq(token.totalSupply(), INITIAL_SUPPLY);
+    }
+
+    function test_ownerBalance() public view {
+        assertEq(token.balanceOf(owner), INITIAL_SUPPLY);
+    }
+
+    function test_taxRates() public view {
+        assertEq(token.buyTaxBps(), {{toBps buyTaxPercent}});
+        assertEq(token.sellTaxBps(), {{toBps sellTaxPercent}});
+    }
+
+    // -------------------------------------------------------------------------
+    // Buy Tax (from == lpPair)
+    // -------------------------------------------------------------------------
+
+    function test_buyTax() public {
+        uint256 amount = 1000 * 10 ** 18;
+
+        // Send tokens to the lpPair (simulating liquidity)
+        vm.prank(owner);
+        token.transfer(lpPair, amount);
+
+        // Buy: lpPair -> alice
+        vm.prank(lpPair);
+        token.transfer(alice, amount);
+
+        uint256 tax = (amount * {{toBps buyTaxPercent}}) / 10000;
+        assertEq(token.balanceOf(alice), amount - tax);
+        assertEq(token.balanceOf(treasury), tax);
+    }
+
+    // -------------------------------------------------------------------------
+    // Sell Tax (to == lpPair)
+    // -------------------------------------------------------------------------
+
+    function test_sellTax() public {
+        uint256 amount = 1000 * 10 ** 18;
+
+        // Give alice some tokens
+        vm.prank(owner);
+        token.transfer(alice, amount);
+
+        // Sell: alice -> lpPair
+        vm.prank(alice);
+        token.transfer(lpPair, amount);
+
+        uint256 tax = (amount * {{toBps sellTaxPercent}}) / 10000;
+        assertEq(token.balanceOf(lpPair), amount - tax);
+        assertEq(token.balanceOf(treasury), tax);
+    }
+
+    // -------------------------------------------------------------------------
+    // Tax Exclusion
+    // -------------------------------------------------------------------------
+
+    function test_excludedFromTax() public {
+        uint256 amount = 1000 * 10 ** 18;
+
+        // Exclude alice
+        vm.prank(owner);
+        token.excludeFromTax(alice, true);
+
+        // Send tokens to lpPair
+        vm.prank(owner);
+        token.transfer(lpPair, amount);
+
+        // Buy from lpPair to alice (excluded) — no tax
+        vm.prank(lpPair);
+        token.transfer(alice, amount);
+
+        assertEq(token.balanceOf(alice), amount);
+    }
+
+    // -------------------------------------------------------------------------
+    // Max Wallet
+    // -------------------------------------------------------------------------
+
+    function test_maxWallet_revert() public {
+        uint256 maxWallet = token.maxWalletAmount();
+
+        // Send tokens to lpPair
+        vm.prank(owner);
+        token.transfer(lpPair, maxWallet + 1000 * 10 ** 18);
+
+        // Buy more than max wallet
+        vm.prank(lpPair);
+        vm.expectRevert("Exceeds max wallet");
+        token.transfer(alice, maxWallet + 1);
+    }
+
+    // -------------------------------------------------------------------------
+    // Owner Functions
+    // -------------------------------------------------------------------------
+
+    function test_setTaxRates() public {
+        vm.prank(owner);
+        token.setTaxRates(200, 300);
+        assertEq(token.buyTaxBps(), 200);
+        assertEq(token.sellTaxBps(), 300);
+    }
+
+    function test_setTaxRates_revert_tooHigh() public {
+        vm.prank(owner);
+        vm.expectRevert("Buy tax too high");
+        token.setTaxRates(2501, 0);
+    }
+
+    function test_setTaxRates_revert_notOwner() public {
+        vm.prank(alice);
+        vm.expectRevert();
+        token.setTaxRates(100, 100);
+    }
+
+    // -------------------------------------------------------------------------
+    // Normal Transfer (no tax)
+    // -------------------------------------------------------------------------
+
+    function test_normalTransfer_noTax() public {
+        uint256 amount = 1000 * 10 ** 18;
+
+        vm.prank(owner);
+        token.transfer(alice, amount);
+
+        // alice -> bob (neither is lpPair) — no tax
+        vm.prank(alice);
+        token.transfer(bob, amount);
+
+        assertEq(token.balanceOf(bob), amount);
+    }
+}

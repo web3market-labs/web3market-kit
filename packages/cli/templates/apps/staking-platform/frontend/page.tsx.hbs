@@ -1,0 +1,33 @@
+'use client'
+
+import { useAccount } from 'wagmi'
+import { StakingDashboard } from '@/components/StakingDashboard'
+import { StakingStats } from '@/components/StakingStats'
+
+export default function Home() {
+  const { isConnected } = useAccount()
+
+  return (
+    <div className="container mx-auto py-10 px-4">
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold tracking-tight">{{stakingTokenName}} Staking</h1>
+          <p className="text-muted-foreground mt-2">
+            Stake your {{stakingTokenSymbol}} tokens and earn rewards.
+          </p>
+        </div>
+        <StakingStats />
+        {isConnected ? (
+          <StakingDashboard />
+        ) : (
+          <div className="rounded-lg border bg-card p-8 text-center mt-6">
+            <h2 className="text-xl font-semibold mb-2">Connect Your Wallet</h2>
+            <p className="text-muted-foreground">
+              Connect your wallet to start staking {{stakingTokenSymbol}}.
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}

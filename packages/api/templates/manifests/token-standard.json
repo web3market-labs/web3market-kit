@@ -1,0 +1,41 @@
+{
+  "id": "token-standard",
+  "slug": "erc20-standard",
+  "displayName": "Standard Token",
+  "description": "Configurable ERC-20 with mint, burn, and pause capabilities. Production-ready with OpenZeppelin v5.x, comprehensive tests, and a full Next.js dashboard.",
+  "version": "1.0.0",
+  "tier": "free",
+  "category": "token",
+  "parameters": [
+    { "name": "tokenName", "prompt": "Token name", "type": "string", "default": "My Token", "required": true },
+    { "name": "tokenSymbol", "prompt": "Token symbol", "type": "string", "default": "MTK", "required": true },
+    { "name": "initialSupply", "prompt": "Initial supply (in tokens)", "type": "string", "default": "1000000", "required": true },
+    { "name": "mintable", "prompt": "Enable minting?", "type": "boolean", "default": true },
+    { "name": "burnable", "prompt": "Enable burning?", "type": "boolean", "default": true },
+    { "name": "pausable", "prompt": "Enable pausing?", "type": "boolean", "default": false }
+  ],
+  "files": {
+    "contracts": [
+      { "template": "token/contracts/Token.sol.hbs", "output": "contracts/src/{{tokenSymbol}}Token.sol" },
+      { "template": "token/contracts/Token.t.sol.hbs", "output": "contracts/test/{{tokenSymbol}}Token.t.sol" },
+      { "template": "token/contracts/DeployToken.s.sol.hbs", "output": "contracts/script/Deploy{{tokenSymbol}}Token.s.sol" }
+    ],
+    "frontend": [
+      { "template": "token/frontend/hooks/useToken.ts.hbs", "output": "web/hooks/useToken.ts" },
+      { "template": "token/frontend/components/TokenDashboard.tsx.hbs", "output": "web/components/TokenDashboard.tsx" },
+      { "template": "token/frontend/components/MintForm.tsx.hbs", "output": "web/components/MintForm.tsx" },
+      { "template": "token/frontend/components/TransferForm.tsx.hbs", "output": "web/components/TransferForm.tsx" },
+      { "template": "token/frontend/components/TokenStats.tsx.hbs", "output": "web/components/TokenStats.tsx" },
+      { "template": "token/frontend/app/page.tsx.hbs", "output": "web/app/page.tsx" }
+    ],
+    "shared": [
+      "_shared/root",
+      "_shared/contracts",
+      "_shared/frontend"
+    ]
+  },
+  "solidityDependencies": [
+    "OpenZeppelin/openzeppelin-contracts",
+    "foundry-rs/forge-std"
+  ]
+}

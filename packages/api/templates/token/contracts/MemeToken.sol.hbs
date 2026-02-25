@@ -1,0 +1,108 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+
+contract {{tokenSymbol}}Token is ERC20, Ownable {
+    uint256 public maxTxAmount;
+    uint256 public maxWalletAmount;
+    uint256 public burnBps;
+    bool public tradingEnabled;
+
+    mapping(address => bool) public isExcludedFromLimits;
+
+    event TradingEnabled();
+    event MaxTxUpdated(uint256 amount);
+    event MaxWalletUpdated(uint256 amount);
+    event BurnPercentUpdated(uint256 burnBps);
+    event ExcludedFromLimits(address account, bool excluded);
+
+    constructor()
+        ERC20("{{tokenName}}", "{{tokenSymbol}}")
+        Ownable(msg.sender)
+    {
+        uint256 supply = {{totalSupply}} * 10 ** decimals();
+        maxTxAmount = (supply * {{maxTxPercent}}) / 100;
+        maxWalletAmount = (supply * {{maxWalletPercent}}) / 100;
+        burnBps = {{toBps burnPercent}};
+
+        isExcludedFromLimits[msg.sender] = true;
+        isExcludedFromLimits[address(this)] = true;
+
+        _mint(msg.sender, supply);
+    }
+
+    function _update(
+        address from,
+        address to,
+        uint256 amount
+    ) internal override {
+        // Allow minting and burning
+        if (from == address(0) || to == address(0)) {
+            super._update(from, to, amount);
+            return;
+        }
+
+        // Trading must be enabled (owner always allowed)
+        if (!tradingEnabled) {
+            require(
+                isExcludedFromLimits[from] || isExcludedFromLimits[to],
+                "Trading not enabled"
+            );
+        }
+
+        bool excluded = isExcludedFromLimits[from] || isExcludedFromLimits[to];
+
+        if (!excluded) {
+            // Max transaction
+            require(amount <= maxTxAmount, "Exceeds max tx");
+
+            // Max wallet
+            require(
+                balanceOf(to) + amount <= maxWalletAmount,
+                "Exceeds max wallet"
+            );
+        }
+
+        // Auto-burn
+        uint256 burnAmount = 0;
+        if (burnBps > 0 && !excluded) {
+            burnAmount = (amount * burnBps) / 10000;
+            if (burnAmount > 0) {
+                super._update(from, address(0), burnAmount);
+                amount -= burnAmount;
+            }
+        }
+
+        super._update(from, to, amount);
+    }
+
+    function enableTrading() external onlyOwner {
+        tradingEnabled = true;
+        emit TradingEnabled();
+    }
+
+    function setMaxTx(uint256 _maxTxAmount) external onlyOwner {
+        require(_maxTxAmount >= totalSupply() / 1000, "Max tx too low");
+        maxTxAmount = _maxTxAmount;
+        emit MaxTxUpdated(_maxTxAmount);
+    }
+
+    function setMaxWallet(uint256 _maxWalletAmount) external onlyOwner {
+        require(_maxWalletAmount >= totalSupply() / 1000, "Max wallet too low");
+        maxWalletAmount = _maxWalletAmount;
+        emit MaxWalletUpdated(_maxWalletAmount);
+    }
+
+    function setBurnPercent(uint256 _burnBps) external onlyOwner {
+        require(_burnBps <= 1000, "Burn too high");
+        burnBps = _burnBps;
+        emit BurnPercentUpdated(_burnBps);
+    }
+
+    function excludeFromLimits(address account, bool excluded) external onlyOwner {
+        isExcludedFromLimits[account] = excluded;
+        emit ExcludedFromLimits(account, excluded);
+    }
+}

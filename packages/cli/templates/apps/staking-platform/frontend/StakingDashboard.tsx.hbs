@@ -1,0 +1,15 @@
+'use client'
+
+import { StakeForm } from './StakeForm'
+import { RewardsPanel } from './RewardsPanel'
+
+export function StakingDashboard() {
+  return (
+    <div className="mt-6 space-y-6">
+      <div className="grid gap-6 md:grid-cols-2">
+        <StakeForm />
+        <RewardsPanel />
+      </div>
+    </div>
+  )
+}

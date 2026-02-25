@@ -1,0 +1,31 @@
+'use client'
+
+import { useAccount } from 'wagmi'
+import { TokenStats } from './TokenStats'
+import { MintForm } from './MintForm'
+import { TransferForm } from './TransferForm'
+
+export function TokenDashboard() {
+  const { isConnected } = useAccount()
+
+  if (!isConnected) {
+    return (
+      <div className="rounded-lg border bg-card p-8 text-center">
+        <h2 className="text-xl font-semibold mb-2">Connect Your Wallet</h2>
+        <p className="text-muted-foreground">
+          Connect your wallet to manage {{tokenName}} ({{tokenSymbol}}).
+        </p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      <TokenStats />
+      <div className="grid gap-6 md:grid-cols-2">
+        <MintForm />
+        <TransferForm />
+      </div>
+    </div>
+  )
+}

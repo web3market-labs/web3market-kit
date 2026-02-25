@@ -1,0 +1,18 @@
+'use client'
+
+import { StakeForm } from '@/components/StakeForm'
+import { RewardsPanel } from '@/components/RewardsPanel'
+
+export default function StakingPage() {
+  return (
+    <div className="container mx-auto py-10 px-4">
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-3xl font-bold tracking-tight mb-8">Manage Staking</h1>
+        <div className="space-y-6">
+          <StakeForm />
+          <RewardsPanel />
+        </div>
+      </div>
+    </div>
+  )
+}

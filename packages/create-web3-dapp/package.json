@@ -1,0 +1,25 @@
+{
+  "name": "create-web3-dapp",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Create a full-stack dApp in minutes with Web3 Market dApp Kit",
+  "bin": {
+    "create-web3-dapp": "./dist/index.js",
+    "create-w3m-dapp": "./dist/index.js"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@web3market/cli": "workspace:*"
+  },
+  "devDependencies": {
+    "@web3market/tsconfig": "workspace:*",
+    "tsup": "^8.3.0",
+    "typescript": "^5.7.0"
+  }
+}

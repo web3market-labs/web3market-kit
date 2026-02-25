@@ -1,0 +1,193 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+import { Test, console } from "forge-std/Test.sol";
+import { {{tokenSymbol}}Token } from "../src/{{tokenSymbol}}Token.sol";
+
+contract {{tokenSymbol}}TokenTest is Test {
+    {{tokenSymbol}}Token public token;
+
+    address public owner;
+    address public alice;
+    address public bob;
+
+    uint256 public constant TOTAL_SUPPLY = {{totalSupply}} * 10 ** 18;
+
+    function setUp() public {
+        owner = makeAddr("owner");
+        alice = makeAddr("alice");
+        bob = makeAddr("bob");
+
+        vm.prank(owner);
+        token = new {{tokenSymbol}}Token();
+    }
+
+    // -------------------------------------------------------------------------
+    // Constructor
+    // -------------------------------------------------------------------------
+
+    function test_name() public view {
+        assertEq(token.name(), "{{tokenName}}");
+    }
+
+    function test_symbol() public view {
+        assertEq(token.symbol(), "{{tokenSymbol}}");
+    }
+
+    function test_totalSupply() public view {
+        assertEq(token.totalSupply(), TOTAL_SUPPLY);
+    }
+
+    function test_tradingDisabledByDefault() public view {
+        assertFalse(token.tradingEnabled());
+    }
+
+    // -------------------------------------------------------------------------
+    // Trading Controls
+    // -------------------------------------------------------------------------
+
+    function test_transferReverts_tradingDisabled() public {
+        vm.prank(owner);
+        token.transfer(alice, 1000 * 10 ** 18);
+
+        vm.prank(alice);
+        vm.expectRevert("Trading not enabled");
+        token.transfer(bob, 100 * 10 ** 18);
+    }
+
+    function test_ownerCanTransfer_tradingDisabled() public {
+        vm.prank(owner);
+        token.transfer(alice, 1000 * 10 ** 18);
+
+        assertEq(token.balanceOf(alice), 1000 * 10 ** 18);
+    }
+
+    function test_enableTrading() public {
+        vm.prank(owner);
+        token.enableTrading();
+
+        assertTrue(token.tradingEnabled());
+    }
+
+    function test_transferAfterTradingEnabled() public {
+        vm.prank(owner);
+        token.enableTrading();
+
+        vm.prank(owner);
+        token.transfer(alice, 1000 * 10 ** 18);
+
+        vm.prank(alice);
+        token.transfer(bob, 500 * 10 ** 18);
+
+        // Account for burn
+        uint256 burnAmount = (500 * 10 ** 18 * {{toBps burnPercent}}) / 10000;
+        assertEq(token.balanceOf(bob), 500 * 10 ** 18 - burnAmount);
+    }
+
+    // -------------------------------------------------------------------------
+    // Auto-burn
+    // -------------------------------------------------------------------------
+
+    function test_autoBurn() public {
+        vm.prank(owner);
+        token.enableTrading();
+
+        uint256 amount = 1000 * 10 ** 18;
+        vm.prank(owner);
+        token.transfer(alice, amount);
+
+        uint256 aliceBalBefore = token.balanceOf(alice);
+        uint256 supplyBefore = token.totalSupply();
+
+        vm.prank(alice);
+        token.transfer(bob, aliceBalBefore);
+
+        uint256 burnAmount = (aliceBalBefore * {{toBps burnPercent}}) / 10000;
+        assertEq(token.totalSupply(), supplyBefore - burnAmount);
+    }
+
+    // -------------------------------------------------------------------------
+    // Max Transaction
+    // -------------------------------------------------------------------------
+
+    function test_maxTx_revert() public {
+        vm.prank(owner);
+        token.enableTrading();
+
+        uint256 maxTx = token.maxTxAmount();
+
+        vm.prank(owner);
+        token.transfer(alice, maxTx + 1000 * 10 ** 18);
+
+        vm.prank(alice);
+        vm.expectRevert("Exceeds max tx");
+        token.transfer(bob, maxTx + 1);
+    }
+
+    // -------------------------------------------------------------------------
+    // Max Wallet
+    // -------------------------------------------------------------------------
+
+    function test_maxWallet_revert() public {
+        vm.prank(owner);
+        token.enableTrading();
+
+        uint256 maxWallet = token.maxWalletAmount();
+
+        vm.prank(owner);
+        token.transfer(alice, maxWallet + 1000 * 10 ** 18);
+
+        // First transfer within limits
+        vm.prank(alice);
+        token.transfer(bob, maxWallet / 2);
+
+        // Second transfer would exceed max wallet
+        vm.prank(alice);
+        vm.expectRevert("Exceeds max wallet");
+        token.transfer(bob, maxWallet);
+    }
+
+    // -------------------------------------------------------------------------
+    // Exclusion from Limits
+    // -------------------------------------------------------------------------
+
+    function test_excludedFromLimits() public {
+        vm.prank(owner);
+        token.enableTrading();
+
+        vm.prank(owner);
+        token.excludeFromLimits(alice, true);
+
+        uint256 maxTx = token.maxTxAmount();
+
+        vm.prank(owner);
+        token.transfer(alice, maxTx * 5);
+
+        // alice is excluded — can transfer above maxTx
+        vm.prank(alice);
+        token.transfer(bob, maxTx + 1);
+    }
+
+    // -------------------------------------------------------------------------
+    // Owner Functions
+    // -------------------------------------------------------------------------
+
+    function test_enableTrading_revert_notOwner() public {
+        vm.prank(alice);
+        vm.expectRevert();
+        token.enableTrading();
+    }
+
+    function test_setMaxTx() public {
+        uint256 newMax = TOTAL_SUPPLY / 50;
+        vm.prank(owner);
+        token.setMaxTx(newMax);
+        assertEq(token.maxTxAmount(), newMax);
+    }
+
+    function test_setMaxTx_revert_tooLow() public {
+        vm.prank(owner);
+        vm.expectRevert("Max tx too low");
+        token.setMaxTx(TOTAL_SUPPLY / 1001);
+    }
+}

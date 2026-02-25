@@ -1,0 +1,21 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+import { Script, console } from "forge-std/Script.sol";
+import { {{tokenSymbol}}Token } from "../src/{{tokenSymbol}}Token.sol";
+
+contract Deploy{{tokenSymbol}}Token is Script {
+    function run() external returns ({{tokenSymbol}}Token) {
+        uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
+
+        vm.startBroadcast(deployerPrivateKey);
+
+        {{tokenSymbol}}Token token = new {{tokenSymbol}}Token();
+
+        vm.stopBroadcast();
+
+        console.log("{{tokenSymbol}}Token deployed at:", address(token));
+
+        return token;
+    }
+}

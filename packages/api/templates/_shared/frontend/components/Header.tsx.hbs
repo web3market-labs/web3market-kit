@@ -1,0 +1,37 @@
+'use client'
+
+import { useAccount, useConnect, useDisconnect } from 'wagmi'
+import { injected } from 'wagmi/connectors'
+
+export function Header() {
+  const { address, isConnected } = useAccount()
+  const { connect } = useConnect()
+  const { disconnect } = useDisconnect()
+
+  return (
+    <header className="border-b border-border">
+      <div className="container mx-auto flex items-center justify-between h-16 px-4">
+        <div className="flex items-center gap-2">
+          <span className="text-xl font-bold">{{projectName}}</span>
+        </div>
+        <div>
+          {isConnected ? (
+            <button
+              onClick={() => disconnect()}
+              className="inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 bg-secondary text-secondary-foreground hover:bg-secondary/80"
+            >
+              {address?.slice(0, 6)}...{address?.slice(-4)}
+            </button>
+          ) : (
+            <button
+              onClick={() => connect({ connector: injected() })}
+              className="inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              Connect Wallet
+            </button>
+          )}
+        </div>
+      </div>
+    </header>
+  )
+}

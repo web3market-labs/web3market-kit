@@ -1,0 +1,19 @@
+'use client'
+
+import { TokenDashboard } from '@/components/TokenDashboard'
+
+export default function Home() {
+  return (
+    <div className="container mx-auto py-10 px-4">
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold tracking-tight">{{tokenName}}</h1>
+          <p className="text-muted-foreground mt-2">
+            Manage your {{tokenSymbol}} token — mint, transfer, and view stats.
+          </p>
+        </div>
+        <TokenDashboard />
+      </div>
+    </div>
+  )
+}

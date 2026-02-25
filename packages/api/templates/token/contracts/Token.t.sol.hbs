@@ -1,0 +1,178 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+import { Test, console } from "forge-std/Test.sol";
+import { {{tokenSymbol}}Token } from "../src/{{tokenSymbol}}Token.sol";
+
+contract {{tokenSymbol}}TokenTest is Test {
+    {{tokenSymbol}}Token public token;
+
+    address public owner;
+    address public alice;
+    address public bob;
+
+    uint256 public constant INITIAL_SUPPLY = {{initialSupply}} * 10 ** 18;
+
+    function setUp() public {
+        owner = makeAddr("owner");
+        alice = makeAddr("alice");
+        bob = makeAddr("bob");
+
+        vm.prank(owner);
+        token = new {{tokenSymbol}}Token();
+    }
+
+    // -------------------------------------------------------------------------
+    // Metadata
+    // -------------------------------------------------------------------------
+
+    function test_name() public view {
+        assertEq(token.name(), "{{tokenName}}");
+    }
+
+    function test_symbol() public view {
+        assertEq(token.symbol(), "{{tokenSymbol}}");
+    }
+
+    // -------------------------------------------------------------------------
+    // Initial Supply
+    // -------------------------------------------------------------------------
+
+    function test_initialSupply() public view {
+        assertEq(token.totalSupply(), INITIAL_SUPPLY);
+    }
+
+    function test_ownerBalance() public view {
+        assertEq(token.balanceOf(owner), INITIAL_SUPPLY);
+    }
+
+    // -------------------------------------------------------------------------
+    // Transfers
+    // -------------------------------------------------------------------------
+
+    function test_transfer() public {
+        uint256 amount = 1000 * 10 ** 18;
+
+        vm.prank(owner);
+        token.transfer(alice, amount);
+
+        assertEq(token.balanceOf(alice), amount);
+        assertEq(token.balanceOf(owner), INITIAL_SUPPLY - amount);
+    }
+
+    function test_approve_and_transferFrom() public {
+        uint256 amount = 500 * 10 ** 18;
+
+        vm.prank(owner);
+        token.approve(alice, amount);
+
+        vm.prank(alice);
+        token.transferFrom(owner, bob, amount);
+
+        assertEq(token.balanceOf(bob), amount);
+        assertEq(token.balanceOf(owner), INITIAL_SUPPLY - amount);
+        assertEq(token.allowance(owner, alice), 0);
+    }
+
+    function test_transfer_revert_insufficientBalance() public {
+        uint256 amount = 1 * 10 ** 18;
+
+        vm.prank(alice);
+        vm.expectRevert();
+        token.transfer(bob, amount);
+    }
+{{#if mintable}}
+
+    // -------------------------------------------------------------------------
+    // Minting
+    // -------------------------------------------------------------------------
+
+    function test_mint() public {
+        uint256 amount = 1000 * 10 ** 18;
+
+        vm.prank(owner);
+        token.mint(alice, amount);
+
+        assertEq(token.balanceOf(alice), amount);
+        assertEq(token.totalSupply(), INITIAL_SUPPLY + amount);
+    }
+
+    function test_mint_revert_notOwner() public {
+        uint256 amount = 1000 * 10 ** 18;
+
+        vm.prank(alice);
+        vm.expectRevert();
+        token.mint(alice, amount);
+    }
+{{/if}}
+{{#if burnable}}
+
+    // -------------------------------------------------------------------------
+    // Burning
+    // -------------------------------------------------------------------------
+
+    function test_burn() public {
+        uint256 amount = 500 * 10 ** 18;
+
+        vm.prank(owner);
+        token.burn(amount);
+
+        assertEq(token.balanceOf(owner), INITIAL_SUPPLY - amount);
+        assertEq(token.totalSupply(), INITIAL_SUPPLY - amount);
+    }
+
+    function test_burnFrom() public {
+        uint256 amount = 200 * 10 ** 18;
+
+        vm.prank(owner);
+        token.approve(alice, amount);
+
+        vm.prank(alice);
+        token.burnFrom(owner, amount);
+
+        assertEq(token.balanceOf(owner), INITIAL_SUPPLY - amount);
+        assertEq(token.totalSupply(), INITIAL_SUPPLY - amount);
+        assertEq(token.allowance(owner, alice), 0);
+    }
+{{/if}}
+{{#if pausable}}
+
+    // -------------------------------------------------------------------------
+    // Pausable
+    // -------------------------------------------------------------------------
+
+    function test_pause() public {
+        vm.prank(owner);
+        token.pause();
+
+        assertTrue(token.paused());
+    }
+
+    function test_unpause() public {
+        vm.prank(owner);
+        token.pause();
+
+        vm.prank(owner);
+        token.unpause();
+
+        assertFalse(token.paused());
+    }
+
+    function test_transfer_reverts_when_paused() public {
+        uint256 amount = 100 * 10 ** 18;
+
+        vm.prank(owner);
+        token.pause();
+
+        vm.prank(owner);
+        vm.expectRevert();
+        token.transfer(alice, amount);
+    }
+
+    function test_pause_revert_notOwner() public {
+        vm.prank(alice);
+        vm.expectRevert();
+        token.pause();
+    }
+{{/if}}
+}

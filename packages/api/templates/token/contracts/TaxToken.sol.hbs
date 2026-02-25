@@ -1,0 +1,114 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+
+contract {{tokenSymbol}}Token is ERC20, Ownable {
+    address public taxWallet;
+    uint256 public buyTaxBps;
+    uint256 public sellTaxBps;
+    uint256 public maxWalletAmount;
+    address public lpPair;
+
+    mapping(address => bool) public isExcludedFromTax;
+
+    event TaxRatesUpdated(uint256 buyTaxBps, uint256 sellTaxBps);
+    event TaxWalletUpdated(address wallet);
+    event LpPairUpdated(address pair);
+    event MaxWalletUpdated(uint256 amount);
+    event ExcludedFromTax(address account, bool excluded);
+
+    constructor()
+        ERC20("{{tokenName}}", "{{tokenSymbol}}")
+        Ownable(msg.sender)
+    {
+        taxWallet = msg.sender;
+        buyTaxBps = {{toBps buyTaxPercent}};
+        sellTaxBps = {{toBps sellTaxPercent}};
+
+        uint256 supply = {{initialSupply}} * 10 ** decimals();
+        maxWalletAmount = (supply * {{maxWalletPercent}}) / 100;
+
+        isExcludedFromTax[msg.sender] = true;
+        isExcludedFromTax[address(this)] = true;
+
+        _mint(msg.sender, supply);
+    }
+
+    function _update(
+        address from,
+        address to,
+        uint256 amount
+    ) internal override {
+        if (from == address(0) || to == address(0)) {
+            super._update(from, to, amount);
+            return;
+        }
+
+        if (isExcludedFromTax[from] || isExcludedFromTax[to]) {
+            super._update(from, to, amount);
+        } else {
+            uint256 taxAmount = 0;
+
+            // Buy: from == lpPair
+            if (from == lpPair && buyTaxBps > 0) {
+                taxAmount = (amount * buyTaxBps) / 10000;
+            }
+            // Sell: to == lpPair
+            else if (to == lpPair && sellTaxBps > 0) {
+                taxAmount = (amount * sellTaxBps) / 10000;
+            }
+
+            if (taxAmount > 0) {
+                super._update(from, taxWallet, taxAmount);
+                amount -= taxAmount;
+            }
+
+            super._update(from, to, amount);
+        }
+
+        // Max wallet check (skip for lpPair and excluded addresses)
+        if (
+            to != lpPair &&
+            to != address(0) &&
+            !isExcludedFromTax[to] &&
+            maxWalletAmount > 0
+        ) {
+            require(
+                balanceOf(to) <= maxWalletAmount,
+                "Exceeds max wallet"
+            );
+        }
+    }
+
+    function setTaxRates(uint256 _buyTaxBps, uint256 _sellTaxBps) external onlyOwner {
+        require(_buyTaxBps <= 2500, "Buy tax too high");
+        require(_sellTaxBps <= 2500, "Sell tax too high");
+        buyTaxBps = _buyTaxBps;
+        sellTaxBps = _sellTaxBps;
+        emit TaxRatesUpdated(_buyTaxBps, _sellTaxBps);
+    }
+
+    function setTaxWallet(address _taxWallet) external onlyOwner {
+        require(_taxWallet != address(0), "Zero address");
+        taxWallet = _taxWallet;
+        emit TaxWalletUpdated(_taxWallet);
+    }
+
+    function setLpPair(address _lpPair) external onlyOwner {
+        lpPair = _lpPair;
+        emit LpPairUpdated(_lpPair);
+    }
+
+    function excludeFromTax(address account, bool excluded) external onlyOwner {
+        isExcludedFromTax[account] = excluded;
+        emit ExcludedFromTax(account, excluded);
+    }
+
+    function setMaxWallet(uint256 _maxWalletAmount) external onlyOwner {
+        require(_maxWalletAmount >= totalSupply() / 1000, "Max wallet too low");
+        maxWalletAmount = _maxWalletAmount;
+        emit MaxWalletUpdated(_maxWalletAmount);
+    }
+}

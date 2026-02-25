@@ -1,0 +1,62 @@
+'use client'
+
+import { useState } from 'react'
+import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
+import { parseEther, isAddress } from 'viem'
+
+export function TransferForm() {
+  const [recipient, setRecipient] = useState('')
+  const [amount, setAmount] = useState('')
+
+  const { writeContract, data: hash, isPending } = useWriteContract()
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash })
+
+  const handleTransfer = () => {
+    if (!amount || !recipient || !isAddress(recipient)) return
+    // TODO: Replace with your deployed contract address and generated ABI
+    // writeContract({
+    //   address: CONTRACT_ADDRESS,
+    //   abi: tokenAbi,
+    //   functionName: 'transfer',
+    //   args: [recipient as `0x${string}`, parseEther(amount)],
+    // })
+  }
+
+  return (
+    <div className="rounded-lg border bg-card p-6">
+      <h3 className="text-lg font-semibold mb-4">Transfer {{tokenSymbol}}</h3>
+      <div className="space-y-4">
+        <div>
+          <label className="text-sm font-medium mb-1.5 block">Recipient</label>
+          <input
+            type="text"
+            value={recipient}
+            onChange={(e) => setRecipient(e.target.value)}
+            placeholder="0x..."
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
+        </div>
+        <div>
+          <label className="text-sm font-medium mb-1.5 block">Amount</label>
+          <input
+            type="text"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="0.0"
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
+        </div>
+        <button
+          onClick={handleTransfer}
+          disabled={isPending || isConfirming || !amount || !recipient}
+          className="inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 w-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+        >
+          {isPending ? 'Confirming...' : isConfirming ? 'Sending...' : 'Send Tokens'}
+        </button>
+        {isSuccess && (
+          <p className="text-sm text-green-600">Transfer successful!</p>
+        )}
+      </div>
+    </div>
+  )
+}
