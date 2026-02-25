@@ -12,15 +12,20 @@
     "typecheck": "turbo run typecheck",
     "clean": "turbo run clean",
     "api": "WEB3MARKET_DEV_MODE=true npx tsx packages/api/src/index.ts",
-    "w3m": "WEB3MARKET_API_URL=http://localhost:3001 npx tsx packages/cli/src/bin.ts"
+    "w3m": "WEB3MARKET_API_URL=http://localhost:3001 npx tsx packages/cli/src/bin.ts",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "pnpm build && changeset publish"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.0",
+    "@changesets/changelog-github": "^0.5.2",
+    "@changesets/cli": "^2.29.8",
     "@types/node": "^22.0.0",
+    "tsup": "^8.3.0",
     "turbo": "^2.3.0",
     "typescript": "^5.7.0",
-    "vitest": "^2.1.0",
-    "tsup": "^8.3.0"
+    "vitest": "^2.1.0"
   },
   "packageManager": "pnpm@9.15.0",
   "engines": {

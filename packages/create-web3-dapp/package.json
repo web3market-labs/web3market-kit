@@ -7,6 +7,7 @@
     "create-web3-dapp": "./dist/index.js",
     "create-w3m-dapp": "./dist/index.js"
   },
+  "publishConfig": { "access": "public" },
   "files": ["dist"],
   "scripts": {
     "build": "tsup",

@@ -6,6 +6,7 @@
     ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" },
     "./env": { "import": "./dist/env.js", "types": "./dist/env.d.ts" }
   },
+  "publishConfig": { "access": "public" },
   "files": ["dist"],
   "scripts": {
     "build": "tsup",
