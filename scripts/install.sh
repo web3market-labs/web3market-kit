@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# w3m installer — https://install.web3.market
-# Usage: curl -fsSL https://install.web3.market | bash
+# w3m installer
+# Usage: bash install.sh
 
 REQUIRED_NODE_MAJOR=20
 CLI_PACKAGE="@web3marketlabs/cli"

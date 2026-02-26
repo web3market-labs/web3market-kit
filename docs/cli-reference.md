@@ -1,6 +1,6 @@
 # CLI Reference
 
-Web3 Market dApp Kit CLI (`@web3marketlabs/cli` v0.2.0)
+Web3 Market dApp Kit CLI (`@web3marketlabs/cli` v0.3.0)
 
 ## Installation
 
@@ -31,12 +31,14 @@ When inside a project directory, the workspace shows:
 
 | Option | Description |
 |---|---|
-| Start dev environment | Anvil + deploy + Next.js at localhost:3000 |
-| Deploy contracts | Pick a chain (Local, testnet, mainnet) |
-| Customize with AI / Connect AI agent | AI-powered code modification |
-| View deployments | Shows deployed contracts (if any) |
-| Run tests | Forge test suite |
-| Security audit | Slither + AI review |
+| Dev environment | Local chain + frontend |
+| Deploy | Pick a chain (Anvil, testnet, mainnet) |
+| AI customize | Modify contracts & frontend (single-shot) |
+| AI Chat | Interactive multi-turn AI conversation |
+| Auto-fix | Diagnose & repair build errors with AI |
+| Deployments | Shows deployed contracts (only if deployments exist) |
+| Test | Forge test suite (only if project has contracts) |
+| Audit | Security analysis (only if project has contracts) |
 | Switch project | Open a different project |
 | Exit | Close the workspace |
 

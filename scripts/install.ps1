@@ -1,5 +1,5 @@
-# w3m installer for Windows — https://install.web3.market
-# Usage: irm https://install.web3.market/ps1 | iex
+# w3m installer for Windows
+# Usage: .\install.ps1
 
 $ErrorActionPreference = "Stop"
 
