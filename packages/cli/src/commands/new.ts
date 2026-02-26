@@ -278,7 +278,7 @@ async function runTemplateScaffold(
   // Post-install: codegen
   logger.step('Running codegen...')
   try {
-    const { runCodegen } = await import('@web3market/codegen')
+    const { runCodegen } = await import('@web3marketlabs/codegen')
     await runCodegen({ root: projectDir })
     codegenOk = true
     logger.success('Codegen complete')

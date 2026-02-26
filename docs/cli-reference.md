@@ -1,10 +1,10 @@
 # CLI Reference
 
-Web3 Market dApp Kit CLI (`@web3market/cli` v0.2.0)
+Web3 Market dApp Kit CLI (`@web3marketlabs/cli` v0.2.0)
 
 ## Installation
 
-The CLI is distributed as `@web3market/cli`. It exposes two binaries:
+The CLI is distributed as `@web3marketlabs/cli`. It exposes two binaries:
 
 - `web3market` -- primary binary
 - `w3m` -- shorthand alias

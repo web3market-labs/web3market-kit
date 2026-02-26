@@ -4,7 +4,7 @@
 $ErrorActionPreference = "Stop"
 
 $RequiredNodeMajor = 20
-$CliPackage = "@web3market/cli"
+$CliPackage = "@web3marketlabs/cli"
 
 # ── Colors ───────────────────────────────────────────────────────────
 function Write-Info  { param($msg) Write-Host $msg -ForegroundColor Cyan }
@@ -137,7 +137,7 @@ if (Test-Command "forge") {
     }
 }
 
-# ── Step 3: Install @web3market/cli globally ─────────────────────────
+# ── Step 3: Install @web3marketlabs/cli globally ─────────────────────────
 Write-Host "  $CliPackage ... " -NoNewline
 
 if (Test-Command "w3m") {

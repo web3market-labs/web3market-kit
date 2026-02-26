@@ -25,7 +25,7 @@ async function runGenerate(opts: GenerateOptions): Promise<void> {
   logger.step('Loading kit.config.ts...')
   let config: Record<string, unknown> = {}
   try {
-    const { loadConfig } = await import('@web3market/config')
+    const { loadConfig } = await import('@web3marketlabs/config')
     config = await loadConfig()
     logger.success('Config loaded')
   } catch {
@@ -34,7 +34,7 @@ async function runGenerate(opts: GenerateOptions): Promise<void> {
 
   logger.step('Running codegen pipeline...')
   try {
-    const { runCodegen } = await import('@web3market/codegen')
+    const { runCodegen } = await import('@web3marketlabs/codegen')
     await runCodegen({ root: process.cwd(), ...config })
     logger.success('Codegen complete')
   } catch (error) {

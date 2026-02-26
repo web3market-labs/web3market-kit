@@ -1,12 +1,12 @@
 /**
- * Component registry — wraps @web3market/components for CLI use.
+ * Component registry — wraps @web3marketlabs/components for CLI use.
  */
-import type { KitComponent, ComponentTier } from '@web3market/sdk'
+import type { KitComponent, ComponentTier } from '@web3marketlabs/sdk'
 import {
   componentRegistry,
   getComponent,
   listComponents as listComponentDescriptors,
-} from '@web3market/components'
+} from '@web3marketlabs/components'
 
 export interface RegistryEntry {
   name: string

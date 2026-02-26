@@ -1,12 +1,19 @@
 {
-  "name": "@web3market/codegen",
-  "version": "0.1.0",
+  "name": "@web3marketlabs/codegen",
+  "version": "0.2.0",
   "type": "module",
   "exports": {
-    ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" }
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
   },
-  "publishConfig": { "access": "public" },
-  "files": ["dist"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -14,12 +21,12 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@web3market/config": "workspace:*",
-    "@web3market/sdk": "workspace:*",
+    "@web3marketlabs/config": "workspace:*",
+    "@web3marketlabs/sdk": "workspace:*",
     "abitype": "^1.0.0"
   },
   "devDependencies": {
-    "@web3market/tsconfig": "workspace:*",
+    "@web3marketlabs/tsconfig": "workspace:*",
     "tsup": "^8.3.0",
     "typescript": "^5.7.0",
     "viem": "^2.21.0"

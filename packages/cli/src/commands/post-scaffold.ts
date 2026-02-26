@@ -216,7 +216,7 @@ export async function runLocalDeploy(projectDir: string): Promise<void> {
     // 5. Run codegen
     logger.step('Running codegen...')
     try {
-      const { runCodegen } = await import('@web3market/codegen')
+      const { runCodegen } = await import('@web3marketlabs/codegen')
       await runCodegen({ root: projectDir })
       logger.success('Codegen complete')
     } catch {
@@ -400,7 +400,7 @@ export async function runPostScaffoldDeploy(projectDir: string, projectName: str
 
   // Codegen
   try {
-    const { runCodegen } = await import('@web3market/codegen')
+    const { runCodegen } = await import('@web3marketlabs/codegen')
     await runCodegen({ root: projectDir })
   } catch {}
 

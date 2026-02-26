@@ -49,7 +49,7 @@ vi.mock('../../lib/deploy/deployments.js', () => ({
   writeStructuredDeployment: vi.fn(),
 }))
 
-vi.mock('@web3market/codegen', () => ({
+vi.mock('@web3marketlabs/codegen', () => ({
   runCodegen: vi.fn(),
 }))
 
@@ -355,7 +355,7 @@ describe('rebuildProject — codegen', () => {
   })
 
   it('runs codegen after successful build', async () => {
-    const { runCodegen } = await import('@web3market/codegen')
+    const { runCodegen } = await import('@web3marketlabs/codegen')
 
     await rebuildProject('/project', { anvilRunning: false })
 
@@ -363,7 +363,7 @@ describe('rebuildProject — codegen', () => {
   })
 
   it('handles codegen failure gracefully', async () => {
-    const codegen = await import('@web3market/codegen')
+    const codegen = await import('@web3marketlabs/codegen')
     vi.mocked(codegen.runCodegen).mockRejectedValue(new Error('codegen config not found'))
 
     const result = await rebuildProject('/project', { anvilRunning: false })
@@ -391,7 +391,7 @@ describe('rebuildProject — full pipeline', () => {
     })
     mockParseBroadcast.mockResolvedValue([])
 
-    const codegen = await import('@web3market/codegen')
+    const codegen = await import('@web3marketlabs/codegen')
     vi.mocked(codegen.runCodegen).mockImplementation(async () => {
       callOrder.push('codegen')
     })

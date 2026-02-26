@@ -1,4 +1,4 @@
-import type { ComponentParameter } from '@web3market/sdk'
+import type { ComponentParameter } from '@web3marketlabs/sdk'
 
 export interface AppTemplateFile {
   /** Handlebars template path relative to the template directory */
@@ -12,7 +12,7 @@ export interface AppTemplate {
   displayName: string
   description: string
   version: string
-  /** Component IDs to include (from @web3market/components registry) */
+  /** Component IDs to include (from @web3marketlabs/components registry) */
   components: string[]
   /** Additional template-level prompts beyond component params */
   parameters: ComponentParameter[]

@@ -1,6 +1,6 @@
 import * as p from '@clack/prompts'
-import type { ComponentParameter } from '@web3market/sdk'
-import { getComponent } from '@web3market/components'
+import type { ComponentParameter } from '@web3marketlabs/sdk'
+import { getComponent } from '@web3marketlabs/components'
 import type { AppTemplate } from './types.js'
 
 /**

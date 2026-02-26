@@ -1,7 +1,7 @@
 export { tokenComponent } from './token.js'
 
 import { tokenComponent } from './token.js'
-import type { KitComponent } from '@web3market/sdk'
+import type { KitComponent } from '@web3marketlabs/sdk'
 
 export const componentRegistry: Record<string, KitComponent> = {
   token: tokenComponent,

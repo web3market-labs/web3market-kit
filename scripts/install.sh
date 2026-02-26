@@ -5,7 +5,7 @@ set -euo pipefail
 # Usage: curl -fsSL https://install.web3.market | bash
 
 REQUIRED_NODE_MAJOR=20
-CLI_PACKAGE="@web3market/cli"
+CLI_PACKAGE="@web3marketlabs/cli"
 
 # ── Colors ───────────────────────────────────────────────────────────
 RED='\033[0;31m'
@@ -124,7 +124,7 @@ else
   fi
 fi
 
-# ── Step 3: Install @web3market/cli globally ─────────────────────────
+# ── Step 3: Install @web3marketlabs/cli globally ─────────────────────────
 printf "  %s ... " "$CLI_PACKAGE"
 
 install_cli() {

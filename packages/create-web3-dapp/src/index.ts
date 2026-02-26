@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-import { createCli } from '@web3market/cli'
+import { createCli } from '@web3marketlabs/cli'
 
 /**
- * create-web3-dapp — thin wrapper around @web3market/cli
+ * create-web3-dapp — thin wrapper around @web3marketlabs/cli
  *
  * Usage:
  *   npx create-web3-dapp my-dapp

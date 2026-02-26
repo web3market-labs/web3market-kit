@@ -8,7 +8,7 @@ token.get('/:chainId/:address', async (c) => {
   const address = c.req.param('address')
 
   try {
-    const { fetchTokenInfo } = await import('@web3market/sdk')
+    const { fetchTokenInfo } = await import('@web3marketlabs/sdk')
     const info = await fetchTokenInfo(address as `0x${string}`, Number(chainId))
     return c.json({ success: true, data: info })
   } catch { /* fall back to mock */ }

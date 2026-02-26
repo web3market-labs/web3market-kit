@@ -1,4 +1,4 @@
-import type { KitComponent } from '@web3market/sdk'
+import type { KitComponent } from '@web3marketlabs/sdk'
 
 export const tokenComponent: KitComponent = {
   id: 'token',

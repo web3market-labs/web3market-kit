@@ -1,12 +1,20 @@
 {
-  "name": "@web3market/api",
-  "version": "0.1.0",
+  "name": "@web3marketlabs/api",
+  "version": "0.2.0",
   "type": "module",
   "exports": {
-    ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" }
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
   },
-  "publishConfig": { "access": "public" },
-  "files": ["dist", "templates"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "templates"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsx watch src/index.ts",
@@ -20,10 +28,10 @@
     "handlebars": "^4.7.8"
   },
   "optionalDependencies": {
-    "@web3market/sdk": "workspace:*"
+    "@web3marketlabs/sdk": "workspace:*"
   },
   "devDependencies": {
-    "@web3market/tsconfig": "workspace:*",
+    "@web3marketlabs/tsconfig": "workspace:*",
     "tsup": "^8.3.0",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0"

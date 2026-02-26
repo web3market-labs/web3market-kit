@@ -1,17 +1,28 @@
 {
-  "name": "@web3market/cli",
-  "version": "0.2.0",
+  "name": "@web3marketlabs/cli",
+  "version": "0.3.0",
   "type": "module",
   "bin": {
     "web3market": "./dist/bin.js",
     "w3m": "./dist/bin.js"
   },
   "exports": {
-    ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" },
-    "./core": { "import": "./dist/core/index.js", "types": "./dist/core/index.d.ts" }
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./core": {
+      "import": "./dist/core/index.js",
+      "types": "./dist/core/index.d.ts"
+    }
   },
-  "publishConfig": { "access": "public" },
-  "files": ["dist", "templates"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "templates"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -21,10 +32,10 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@web3market/config": "workspace:*",
-    "@web3market/codegen": "workspace:*",
-    "@web3market/sdk": "workspace:*",
-    "@web3market/components": "workspace:*",
+    "@web3marketlabs/config": "workspace:*",
+    "@web3marketlabs/codegen": "workspace:*",
+    "@web3marketlabs/sdk": "workspace:*",
+    "@web3marketlabs/components": "workspace:*",
     "commander": "^12.1.0",
     "@clack/prompts": "^0.8.0",
     "picocolors": "^1.1.0",
@@ -33,7 +44,7 @@
     "handlebars": "^4.7.8"
   },
   "devDependencies": {
-    "@web3market/tsconfig": "workspace:*",
+    "@web3marketlabs/tsconfig": "workspace:*",
     "@types/fs-extra": "^11.0.0",
     "tsup": "^8.3.0",
     "typescript": "^5.7.0"

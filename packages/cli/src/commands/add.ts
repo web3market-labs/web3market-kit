@@ -3,7 +3,7 @@ import { Command } from 'commander'
 import * as p from '@clack/prompts'
 import fs from 'fs-extra'
 import pc from 'picocolors'
-import type { ComponentParameter } from '@web3market/sdk'
+import type { ComponentParameter } from '@web3marketlabs/sdk'
 import { renderTemplate } from '../utils/template.js'
 import { logger } from '../utils/logger.js'
 import { isKnownComponent, resolveComponent, listComponents } from '../registry.js'
@@ -165,7 +165,7 @@ async function runAdd(componentName: string): Promise<void> {
   // Run codegen
   logger.step('Running codegen...')
   try {
-    const { runCodegen } = await import('@web3market/codegen')
+    const { runCodegen } = await import('@web3marketlabs/codegen')
     await runCodegen({ root: projectRoot })
     logger.success('Codegen complete')
   } catch {

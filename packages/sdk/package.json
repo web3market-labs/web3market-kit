@@ -1,14 +1,27 @@
 {
-  "name": "@web3market/sdk",
-  "version": "0.1.0",
+  "name": "@web3marketlabs/sdk",
+  "version": "0.2.0",
   "type": "module",
   "exports": {
-    ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" },
-    "./chains": { "import": "./dist/chains.js", "types": "./dist/chains.d.ts" },
-    "./abi": { "import": "./dist/abi.js", "types": "./dist/abi.d.ts" }
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./chains": {
+      "import": "./dist/chains.js",
+      "types": "./dist/chains.d.ts"
+    },
+    "./abi": {
+      "import": "./dist/abi.js",
+      "types": "./dist/abi.d.ts"
+    }
   },
-  "publishConfig": { "access": "public" },
-  "files": ["dist"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -19,7 +32,7 @@
     "viem": "^2.21.0"
   },
   "devDependencies": {
-    "@web3market/tsconfig": "workspace:*",
+    "@web3marketlabs/tsconfig": "workspace:*",
     "tsup": "^8.3.0",
     "typescript": "^5.7.0",
     "viem": "^2.21.0"

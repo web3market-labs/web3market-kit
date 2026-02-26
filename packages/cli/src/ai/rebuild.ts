@@ -100,7 +100,7 @@ export async function rebuildProject(
   const codegenSpinner = p.spinner()
   codegenSpinner.start('Running codegen...')
   try {
-    const { runCodegen } = await import('@web3market/codegen')
+    const { runCodegen } = await import('@web3marketlabs/codegen')
     await runCodegen({ root: projectRoot })
     codegenSpinner.stop('Codegen complete')
     result.codegenSuccess = true

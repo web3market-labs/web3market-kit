@@ -88,7 +88,7 @@ function createReadConfigStep(): WizardStep<PublishState> {
       if (!existsSync(configPath)) { logger.warn('No kit.config.ts found.'); return }
 
       try {
-        const { loadConfig } = await import('@web3market/config')
+        const { loadConfig } = await import('@web3marketlabs/config')
         const config = await loadConfig({ cwd: ctx.projectRoot })
         const modules = config.modules ? Object.keys(config.modules) : []
         if (modules.length > 0) {

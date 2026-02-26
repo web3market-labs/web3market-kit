@@ -196,7 +196,7 @@ export async function runDeploy(opts: DeployOptions): Promise<void> {
   // 10. Run codegen
   logger.step('Running codegen to update TypeScript bindings...')
   try {
-    const { runCodegen } = await import('@web3market/codegen')
+    const { runCodegen } = await import('@web3marketlabs/codegen')
     await runCodegen({ root: process.cwd() })
     logger.success('Codegen complete — addresses updated')
   } catch {

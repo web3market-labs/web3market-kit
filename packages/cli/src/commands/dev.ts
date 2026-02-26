@@ -219,7 +219,7 @@ export async function runDev(opts: DevOptions): Promise<void> {
       // ── 7. Codegen ──────────────────────────────────────────────────
       logger.step('Running codegen...')
       try {
-        const { runCodegen } = await import('@web3market/codegen')
+        const { runCodegen } = await import('@web3marketlabs/codegen')
         await runCodegen({ root: projectDir })
         logger.success('Codegen complete')
       } catch (err: any) {

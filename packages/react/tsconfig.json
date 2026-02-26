@@ -1,5 +1,5 @@
 {
-  "extends": "@web3market/tsconfig/react.json",
+  "extends": "@web3marketlabs/tsconfig/react.json",
   "compilerOptions": { "outDir": "dist" },
   "include": ["src"]
 }

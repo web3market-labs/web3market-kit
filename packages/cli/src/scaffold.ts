@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url'
 import { createRequire } from 'node:module'
 import fs from 'fs-extra'
 import { execa } from 'execa'
-import { getComponent } from '@web3market/components'
+import { getComponent } from '@web3marketlabs/components'
 import { renderTemplate } from './utils/template.js'
 import { logger } from './utils/logger.js'
 import { installSolidityDep } from './utils/foundry.js'
@@ -142,7 +142,7 @@ export async function scaffoldFromTemplate(options: TemplateScaffoldOptions): Pr
   // 9. Run codegen
   logger.step('Running codegen...')
   try {
-    const { runCodegen } = await import('@web3market/codegen')
+    const { runCodegen } = await import('@web3marketlabs/codegen')
     await runCodegen({ root: projectDir })
     logger.success('Codegen complete')
   } catch {
@@ -182,12 +182,12 @@ async function renderSharedDir(
 
 /**
  * Resolve a component template file content.
- * First tries the @web3market/components package, then local fallback.
+ * First tries the @web3marketlabs/components package, then local fallback.
  */
 async function resolveComponentTemplate(templatePath: string): Promise<string> {
-  // Try resolving from @web3market/components package
+  // Try resolving from @web3marketlabs/components package
   try {
-    const pkgJsonPath = esmRequire.resolve('@web3market/components/package.json')
+    const pkgJsonPath = esmRequire.resolve('@web3marketlabs/components/package.json')
     const pkgRoot = path.dirname(pkgJsonPath)
     const fullPath = path.join(pkgRoot, templatePath)
     return await fs.readFile(fullPath, 'utf-8')
@@ -242,7 +242,7 @@ async function writeRootPackageJson(projectDir: string, options: ScaffoldOptions
     version: '0.0.0',
     private: true,
     scripts: { dev: 'w3m dev', build: 'turbo run build', test: 'w3m test', generate: 'w3m generate', deploy: 'w3m deploy' },
-    devDependencies: { '@web3market/cli': '^0.2.0', turbo: '^2.3.0' },
+    devDependencies: { '@web3marketlabs/cli': '^0.2.0', turbo: '^2.3.0' },
   }
   if (options.packageManager !== 'pnpm') (pkg as any).workspaces = workspaces
   await fs.writeJson(path.join(projectDir, 'package.json'), pkg, { spaces: 2 })
@@ -250,7 +250,7 @@ async function writeRootPackageJson(projectDir: string, options: ScaffoldOptions
 
 async function writeKitConfig(projectDir: string, options: ScaffoldOptions): Promise<void> {
   const componentsArray = options.components.map((b) => `'${b}'`).join(', ')
-  const content = `import { defineConfig } from '@web3market/config'\n\nexport default defineConfig({\n  contracts: {\n    framework: '${options.contractFramework}',\n  },\n  chains: {\n    default: '${options.chains.includes('sepolia') ? 'sepolia' : 'localhost'}',\n  },\n  components: [${componentsArray}],\n})\n`
+  const content = `import { defineConfig } from '@web3marketlabs/config'\n\nexport default defineConfig({\n  contracts: {\n    framework: '${options.contractFramework}',\n  },\n  chains: {\n    default: '${options.chains.includes('sepolia') ? 'sepolia' : 'localhost'}',\n  },\n  components: [${componentsArray}],\n})\n`
   await fs.writeFile(path.join(projectDir, 'kit.config.ts'), content, 'utf-8')
 }
 
@@ -289,7 +289,7 @@ async function scaffoldNextApp(webDir: string, options: ScaffoldOptions): Promis
   const pkg = {
     name: `${path.basename(options.name)}-web`, version: '0.0.0', private: true,
     scripts: { dev: 'next dev', build: 'next build', start: 'next start' },
-    dependencies: { next: '^15.1.0', react: '^19.0.0', 'react-dom': '^19.0.0', '@web3market/react': '^0.1.0', '@web3market/sdk': '^0.1.0', wagmi: '^2.14.0', viem: '^2.22.0', '@tanstack/react-query': '^5.62.0' },
+    dependencies: { next: '^15.1.0', react: '^19.0.0', 'react-dom': '^19.0.0', '@web3marketlabs/react': '^0.1.0', '@web3marketlabs/sdk': '^0.1.0', wagmi: '^2.14.0', viem: '^2.22.0', '@tanstack/react-query': '^5.62.0' },
     devDependencies: { '@types/react': '^19.0.0', '@types/react-dom': '^19.0.0', typescript: '^5.7.0', tailwindcss: '^4.0.0' },
   }
   await fs.writeJson(path.join(webDir, 'package.json'), pkg, { spaces: 2 })
@@ -309,7 +309,7 @@ async function scaffoldViteApp(webDir: string, options: ScaffoldOptions): Promis
   const pkg = {
     name: `${path.basename(options.name)}-web`, version: '0.0.0', private: true, type: 'module',
     scripts: { dev: 'vite', build: 'tsc && vite build', preview: 'vite preview' },
-    dependencies: { react: '^19.0.0', 'react-dom': '^19.0.0', '@web3market/react': '^0.1.0', '@web3market/sdk': '^0.1.0', wagmi: '^2.14.0', viem: '^2.22.0', '@tanstack/react-query': '^5.62.0' },
+    dependencies: { react: '^19.0.0', 'react-dom': '^19.0.0', '@web3marketlabs/react': '^0.1.0', '@web3marketlabs/sdk': '^0.1.0', wagmi: '^2.14.0', viem: '^2.22.0', '@tanstack/react-query': '^5.62.0' },
     devDependencies: { '@types/react': '^19.0.0', '@types/react-dom': '^19.0.0', '@vitejs/plugin-react': '^4.3.0', typescript: '^5.7.0', vite: '^6.0.0' },
   }
   await fs.writeJson(path.join(webDir, 'package.json'), pkg, { spaces: 2 })
@@ -365,7 +365,7 @@ async function installSolidityDeps(projectDir: string): Promise<void> {
 
 async function runInitialCodegen(projectDir: string): Promise<void> {
   try {
-    const { runCodegen } = await import('@web3market/codegen')
+    const { runCodegen } = await import('@web3marketlabs/codegen')
     await runCodegen({ root: projectDir })
     logger.success('Initial codegen complete')
   } catch {
