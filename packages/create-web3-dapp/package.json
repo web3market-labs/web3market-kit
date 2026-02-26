@@ -1,5 +1,5 @@
 {
-  "name": "create-web3-dapp",
+  "name": "@web3marketlabs/create-web3-dapp",
   "version": "0.2.0",
   "type": "module",
   "description": "Create a full-stack dApp in minutes with Web3 Market dApp Kit",
